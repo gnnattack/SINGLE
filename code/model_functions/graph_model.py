@@ -209,8 +209,8 @@ class EdgeModel(Model):
         return self.x
 
     @torch.no_grad()
-    def expandEdgesByMalicious(self, dataset: GraphDataset, approach: Approach, attacked_node: torch.Tensor,
-                               neighbours: torch.Tensor, device: torch.cuda) -> torch.Tensor:
+    def expandEdgesByMalicious(self, dataset: GraphDataset, approach: Approach, neighbours: torch.Tensor,
+                               device: torch.cuda) -> torch.Tensor:
         """
             adds edges with zero weights to the malicious/attacker node according to the attack approach
 
@@ -218,7 +218,6 @@ class EdgeModel(Model):
             ----------
             dataset: GraphDataset
             approach: Approach
-            attacked_node: torch.Tensor -  the victim node
             neighbours: torch.Tensor - 2d-tensor that includes
                                        1st-col - the nodes that are in the victim nodes BFS neighborhood
                                        2nd-col - the distance of said nodes from the victim node
@@ -229,7 +228,6 @@ class EdgeModel(Model):
             malicious_index: torch.Tensor - the injected/attacker/malicious node index
         """
         data = dataset.data
-        clique = torch.cat((attacked_node, neighbours))
         n = data.num_nodes
         zero_dim_edge_index = []
         first_dim_edge_index = []
@@ -239,7 +237,7 @@ class EdgeModel(Model):
         if not approach.isGlobal():
             malicious_index = np.random.choice(data.num_nodes, 1).item()
 
-        for neighbour_num, neighbour in enumerate(clique):
+        for neighbour_num, neighbour in enumerate(neighbours):
             ignore = dataset.reversed_arr_list[neighbour]  # edges which already exist
 
             tmp_zero_dim_edge_index = []
